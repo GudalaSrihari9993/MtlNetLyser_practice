@@ -164,8 +164,38 @@ void extract_ssid(const u_char *tagged_params, size_t length) {
 }
 void extract_channel(const u_char *packet)
 {
-      uint16_t freq1 = *(packet + 27);
-      uint16_t freq2=
+      uint8_t freq1 = *(packet + 26);
+      uint8_t freq2= *(packet+27);
+      int i;
+      printf("%x %x\n",freq1,freq2);
+      
+      uint16_t freq = freq2;
+      for(i=0;i<8;i++)
+      {
+         freq = freq << 1;
+      }
+      freq = freq | freq1;
+      printf("Channel Freq %d Hz\n",freq);
+      if (freq >= 2412 && freq <= 2472) 
+      {
+        // 2.4 GHz band (Channels 1-13)
+        printf("Channel %d\n",(freq - 2407) / 5);
+      }
+      else if (freq == 2484) 
+      {
+        // 2.4 GHz band (Channel 14)
+        printf("Channel 14\n");
+      } 
+      else if (freq >= 5180 && freq <= 5825) 
+      {
+        // 5 GHz band
+        printf("Channel %d\n",(freq - 5000) / 5);
+      }
+      else 
+      {
+        // Unknown frequency
+        printf("unknown frequency\n");
+      }
       
 }
 
@@ -341,7 +371,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Start the capture
-    pcap_loop(handle, 10, got_packet, NULL);
+    pcap_loop(handle, -1, got_packet, NULL);
 
     // Cleanup
     pcap_freecode(&fp);
